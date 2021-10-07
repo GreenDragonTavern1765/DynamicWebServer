@@ -16,7 +16,7 @@ def serverProgram():
     # and 'accepts' the connection
     serverSocket.listen(2)
     connection, address = serverSocket.accept()
-    print('Connection from ' + str(address))
+    print('Connection Established: ' + str(address))
 
     # Now a connection is established between client/server
     # While the client does not terminate the connection,
@@ -24,15 +24,27 @@ def serverProgram():
     # is not NULL, then the server will send data back to client
     # this will continue until the client terminates the connection
     while True:
-        data = connection.recv(1024).decode()
-        if not data:
+        clientData = connection.recv(1024).decode()
+        if not clientData:
             break
-        print('From connected user: ' + str(data))
-        data = input(' -> ')
-        connection.send(data.encode())
+        serverData = readFromFile(clientData)
+        if serverData is None:
+            connection.send('--> ERROR: File not found'.encode())
+        else:
+            connection.send(serverData.encode())
 
     # Finally, the connection will be closed
+    print('Connection Terminated: ' + str(address))
     connection.close()
+
+def readFromFile(fileName):
+    try:
+        file = open(fileName, "r")
+    except FileNotFoundError:
+        return None
+    content = file.read()
+    file.close()
+    return content
 
 if __name__ == '__main__':
     serverProgram()
